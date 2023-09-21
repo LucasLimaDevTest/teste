@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		body{
+			padding: 0;
+			margin: 0;
+			font-family: Helvetica, sans-serif;
+		}
+		#container{
+			background-color: #090a0a;
+			width: 300px;
+			margin: 70px auto 0;
+		}
+		#prev-value{
+			border-bottom: 1px solid #090a0a;
+		}
+		#current-value{
+			border-bottom: 1px solid #090a0a;
+		}
+		#prev-value, #current-value{
+			background-color: #252729;
+			padding: 23px;
+			min-height: 23px;
+			color: white;
+			text-align: right;
+			font-size: 20px;
+		}
+		#container-buttons{
+			display: grid;
+			grid-template-columns: auto auto auto auto;
+			gap: 1px;
+		}
+		#container-buttons button{
+			padding: 24px;
+			border: none;
+			cursor: pointer;
+			color: white;
+			background-color: #252729;
+			
+		}
+		#container-buttons button:hover{
+			background-color: #c6ccc8;
+		}
+		.button-zero{
+			grid-column: 1 / span 2;
+		}
+		.button-operator{
+			background-color: #38e855 !important; 
+			
+		}
+		
+	</style>
+</head>
+<body>
+	<div id="container">
+		<div id="prev-value"></div>
+		<div id="current-value"></div>
+		<div id="container-buttons">
+			<button>CE</button>
+			<button>DEL</button>
+			<button>C</button>
+			<button class="button-operator">+</button>
+			<button>1</button>
+			<button>2</button>
+			<button>3</button>
+			<button class="button-operator">-</button>
+			<button>4</button>
+			<button>5</button>
+			<button>6</button>
+			<button class="button-operator">*</button>
+			<button>7</button>
+			<button>8</button>
+			<button>9</button>
+			<button class="button-operator">/</button>
+			<button class="button-zero">0</button>
+			<button>.</button>
+			<button class="button-operator button-equal">=</button>
+
+		</div>
+	</div>
+	<script>
+		const preValueDisplay = document.querySelector('#prev-value');
+		const currentValueDisplay = document.querySelector('#current-value');
+		const containerButtons = document.querySelector('#container-buttons');
+
+
+		containerButtons.addEventListener('click', getValueButton);
+
+
+		let number1 = null;
+		let number2 = null;
+		let operationCurrent = '';
+		let operator = null;
+		let nextOperation = false
+
+
+		function getValueButton(event){
+			let buttonClick = event.target.textContent;
+
+			if((!isNaN(buttonClick) || buttonClick === '.') && !nextOperation){
+				if(buttonClick === '.'){
+					checkingHasDot(buttonClick);
+					return;
+				}
+				operationCurrent += buttonClick;
+				number1 = Number(operationCurrent);
+				currentValueDisplay.textContent = number1;
+			}
+
+			if((buttonClick === '+' || buttonClick === '-' || buttonClick === '*' || buttonClick === '/') && number2 === null && number1 !== null && number1 !== ''){
+				operator = buttonClick;
+				nextOperation = true;
+				preValueDisplay.textContent = number1 + ' ' + operator;
+				operationCurrent = '';
+				currentValueDisplay.textContent = '';
+				
+			}
+
+			if((buttonClick === '+' || buttonClick === '-' || buttonClick === '*' || buttonClick === '/') && number2 !== null){
+				operator = buttonClick;
+				nextOperation = true;
+				preValueDisplay.textContent = number1 + ' ' + operator;
+				
+			}
+
+			if((!isNaN(buttonClick) || buttonClick === '.') && nextOperation){
+				if(buttonClick === '.'){
+					checkingHasDot(buttonClick);
+					return;
+				}
+				operationCurrent += buttonClick;
+				number2 = Number(operationCurrent);
+				currentValueDisplay.textContent = number2;
+			}
+			
+			if(buttonClick === '=' && (operator === '+' || operator === '-' || operator === '*' || operator === '/') && number2 !== null && number2 !== ''){
+				
+				computerValue(operator);
+				preValueDisplay.textContent = number1;
+				number2 = '';
+				currentValueDisplay.textContent = '';
+				operationCurrent = '';
+				operator = '';
+			}
+			if(buttonClick === 'CE' || buttonClick === 'C' || buttonClick === 'DEL'){
+				clearOperation(buttonClick);
+			}
+		}
+		function computerValue(operator){
+			if(operator === '/' && number2 === 0){
+				return;
+			}
+			if(operator === '*' && number2 === ''){
+				return;
+			}
+			switch(operator){
+				case '+':
+					number1 += number2;
+					break;
+				case '-':
+					number1 -= number2;
+					break;
+				case '*':
+					number1 *= number2;
+					break;
+					case '/':
+					number1 /= number2;
+					break;
+			}
+		}
+		function clearOperation(clearType){
+			switch(clearType){
+				case 'CE':
+					currentValueDisplay.textContent = '';
+					operationCurrent = '';
+					if(!nextOperation){
+						number1 = '';
+						return;
+					}
+					number2 = '';
+					break;
+				case 'C':
+					currentValueDisplay.textContent = '';
+					preValueDisplay.textContent = '';
+					operationCurrent = '';
+					number1 = null;
+					number2 = null;
+					operator = null;
+					nextOperation = false;
+					break;
+				case 'DEL':
+					let numbersList = currentValueDisplay.textContent.split('');
+					numbersList.pop();
+					operationCurrent = '';
+					numbersList.forEach(function(number){
+						operationCurrent += number;
+					})
+					if(operationCurrent === ''){
+						if(!nextOperation){
+							number1 = '';
+							currentValueDisplay.textContent = '';
+							return;
+						}
+						else{
+							number2 = '';
+							currentValueDisplay.textContent = '';
+							return;
+						}
+						
+					}
+					if(!nextOperation){
+						number1 = Number(operationCurrent);
+						currentValueDisplay.textContent = number1;
+						return;
+					}
+					number2 = Number(operationCurrent);
+					console.log('n2:',  number2);
+					currentValueDisplay.textContent = number2;
+					break;
+			}
+		}
+		function checkingHasDot(buttonClick){
+			let checkingOperation = operationCurrent + buttonClick;
+			let listNumbers = checkingOperation.split('');
+			let amountLength = listNumbers.filter((element) =>{
+				return element === '.';
+			});
+			if(amountLength.length > 1){
+				return;
+			}
+			console.log(amountLength.length);
+			console.log('teste');
+			operationCurrent = checkingOperation;
+			currentValueDisplay.textContent = operationCurrent;
+		}
+	</script>
+</body>
+</html>
